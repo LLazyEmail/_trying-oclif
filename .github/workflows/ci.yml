@@ -31,10 +31,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          # cache disabled until package-lock.json is committed
+          # Re-enable once package-lock.json is committed:
           # cache: npm
 
       - name: Install dependencies
+        # Use npm install until a lockfile is committed; then switch back to npm ci
         run: npm install
 
       - name: Build
