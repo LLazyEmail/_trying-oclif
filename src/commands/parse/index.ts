@@ -72,9 +72,6 @@ export default class Parse extends BaseCommand {
     }
 
     // Placeholder for the real rendering engine integration.
-    // Future PRs will import the typography / layout packages and
-    // perform the actual transformation while keeping zero runtime
-    // overhead for pure type operations.
     this.log(
       `Parsing ${inputPath} with mode=${config.parseMode}, format=${config.format}…`,
     )

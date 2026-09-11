@@ -1,19 +1,19 @@
 /**
- * Minimal flat ESLint config so `npm run lint` / `llazy lint` do not crash.
- * Expand later with typescript-eslint rules.
+ * Minimal flat ESLint config (eslint 9+/10).
+ * Keeps `npm run lint` and `llazy lint` from crashing.
+ * Expand with typescript-eslint in a follow-up.
  */
 export default [
   {
     ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
   },
   {
-    files: ['src/**/*.ts', 'test/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.ts', 'eslint.config.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
     },
     rules: {
-      // Start permissive – tighten in a follow-up PR
       'no-unused-vars': 'off',
       'no-undef': 'off',
     },

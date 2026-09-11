@@ -31,12 +31,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          # Re-enable once package-lock.json is committed:
-          # cache: npm
 
       - name: Install dependencies
-        # Skip lifecycle scripts so a transient tsc error cannot block install.
-        # We run build explicitly in the next step.
+        # ignore-scripts avoids prepare→tsc during install;
+        # build runs explicitly in the next step.
         run: npm install --ignore-scripts
 
       - name: Build

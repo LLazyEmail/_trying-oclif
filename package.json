@@ -16,7 +16,7 @@
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^5.0.0",
     "@types/node": "^22.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^10.0.0",
     "oclif": "^5.0.0",
     "prettier": "^3.0.0",
     "shx": "^0.3.4",
@@ -82,7 +82,7 @@
     "test": "node --import tsx --test test/**/*.test.ts",
     "version": "oclif readme && git add README.md",
     "dev": "node --import tsx ./bin/dev.js",
-    "prepare": "node -e \"process.env.CI || process.env.npm_config_omit ? process.exit(0) : require('child_process').execSync('npm run build', {stdio:'inherit'})\""
+    "prepare": "npm run build"
   },
   "types": "dist/index.d.ts",
   "exports": {
