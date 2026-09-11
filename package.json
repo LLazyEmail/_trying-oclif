@@ -8,22 +8,24 @@
   },
   "bugs": "https://github.com/LLazyEmail/_trying-oclif/issues",
   "dependencies": {
-    "@oclif/core": "^4.0.0",
-    "@oclif/plugin-help": "^6.0.0",
-    "@oclif/plugin-plugins": "^5.0.0"
+    "@oclif/core": "^4.2.0",
+    "@oclif/plugin-help": "^6.2.0",
+    "@oclif/plugin-plugins": "^5.4.0"
   },
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
-    "@oclif/test": "^5.0.0",
+    "@oclif/test": "^4.0.0",
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
+    "oclif": "^4.14.0",
     "prettier": "^3.0.0",
-    "shx": "^0.4.0",
+    "shx": "^0.3.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.17.0"
   },
   "files": [
     "/bin",
@@ -58,6 +60,12 @@
       },
       "check": {
         "description": "Validate project structure and folders"
+      },
+      "lint": {
+        "description": "Lint source files"
+      },
+      "format": {
+        "description": "Format source files with Prettier"
       }
     }
   },
@@ -68,6 +76,7 @@
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
     "prepack": "npm run build && oclif manifest && oclif readme",
