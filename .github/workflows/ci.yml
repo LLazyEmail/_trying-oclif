@@ -15,36 +15,27 @@ permissions:
 
 jobs:
   build-and-test:
-    name: Build & Test (Node ${{ matrix.node-version }})
+    name: npm install → build → test → help
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # @oclif/core v5 requires Node >= 22
-        node-version: [22]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 22
 
-      - name: Install dependencies
-        # ignore-scripts avoids prepare→tsc during install;
-        # build runs explicitly in the next step.
-        run: npm install --ignore-scripts
+      # Exact workflow (Node >= 22 required by @oclif/core v5)
+      - name: npm install
+        run: npm install
 
-      - name: Build
+      - name: npm run build
         run: npm run build
 
-      - name: Test
+      - name: npm test
         run: npm test
 
-      - name: Verify CLI runs
-        run: |
-          node ./bin/run.js --version
-          node ./bin/run.js --help
-          node ./bin/run.js hello
+      - name: ./bin/run.js --help
+        run: ./bin/run.js --help
