@@ -46,7 +46,7 @@ export default class Parse extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Parse)
+    const {args} = await this.parse(Parse)
     const config = await this.resolveConfig()
 
     const inputPath = args.file
@@ -65,7 +65,9 @@ export default class Parse extends BaseCommand {
     }
 
     if (config.dryRun) {
-      this.log(`[dry-run] Would parse ${inputPath} → ${outputPath} (mode=${config.parseMode}, format=${config.format})`)
+      this.log(
+        `[dry-run] Would parse ${inputPath} → ${outputPath} (mode=${config.parseMode}, format=${config.format})`,
+      )
       return
     }
 

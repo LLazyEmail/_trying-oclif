@@ -82,7 +82,7 @@
     "test": "node --import tsx --test test/**/*.test.ts",
     "version": "oclif readme && git add README.md",
     "dev": "node --import tsx ./bin/dev.js",
-    "prepare": "npm run build"
+    "prepare": "node -e \"process.env.CI || process.env.npm_config_omit ? process.exit(0) : require('child_process').execSync('npm run build', {stdio:'inherit'})\""
   },
   "types": "dist/index.d.ts",
   "exports": {

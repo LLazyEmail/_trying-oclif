@@ -35,8 +35,9 @@ jobs:
           # cache: npm
 
       - name: Install dependencies
-        # Use npm install until a lockfile is committed; then switch back to npm ci
-        run: npm install
+        # Skip lifecycle scripts so a transient tsc error cannot block install.
+        # We run build explicitly in the next step.
+        run: npm install --ignore-scripts
 
       - name: Build
         run: npm run build
