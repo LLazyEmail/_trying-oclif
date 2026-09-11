@@ -1,0 +1,86 @@
+{
+  "name": "@llazyemail/cli",
+  "description": "World-class CLI for the LLazyEmail content & email rendering engine",
+  "version": "0.1.0",
+  "author": "LLazyEmail",
+  "bin": {
+    "llazy": "./bin/run.js"
+  },
+  "bugs": "https://github.com/LLazyEmail/_trying-oclif/issues",
+  "dependencies": {
+    "@oclif/core": "^4.0.0",
+    "@oclif/plugin-help": "^6.0.0",
+    "@oclif/plugin-plugins": "^5.0.0"
+  },
+  "devDependencies": {
+    "@oclif/prettier-config": "^0.2.1",
+    "@oclif/test": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "shx": "^0.3.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/LLazyEmail/_trying-oclif",
+  "keywords": [
+    "oclif",
+    "cli",
+    "email",
+    "markdown",
+    "llazyemail",
+    "typography",
+    "rendering"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "type": "module",
+  "oclif": {
+    "bin": "llazy",
+    "dirname": "llazy",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
+    "topicSeparator": " ",
+    "topics": {
+      "parse": {
+        "description": "Parse Markdown into email-ready HTML or React trees"
+      },
+      "check": {
+        "description": "Validate project structure and folders"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LLazyEmail/_trying-oclif.git"
+  },
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "npm run lint",
+    "prepack": "npm run build && oclif manifest && oclif readme",
+    "test": "node --import tsx --test test/**/*.test.ts",
+    "version": "oclif readme && git add README.md",
+    "dev": "node --import tsx ./bin/dev.js",
+    "prepare": "npm run build"
+  },
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}
