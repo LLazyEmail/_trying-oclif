@@ -1,5 +1,5 @@
 /**
- * Primary parse command – Markdown → email-ready HTML / React.
+ * Primary parse command – Markdown → email-ready HTML or React.
  * Uses the registered renderer (stub by default).
  *
  * @packageDocumentation
@@ -8,6 +8,7 @@
 import fs from 'node:fs'
 import {Args, Flags} from '@oclif/core'
 import {BaseCommand, sharedFlags} from '../base.js'
+import {mergeConfig} from '../../types/config.js'
 import {runParseOnce} from '../../parse/run-parse.js'
 import {createDebouncer} from '../../utils/debounce.js'
 
@@ -79,16 +80,8 @@ export default class Parse extends BaseCommand {
       return
     }
 
-    const target = (await runParseOnce({
-      config: {...config, dryRun: true},
-      file: args.file,
-      engineName: flags.engine,
-    })).ok
-      ? undefined
-      : undefined
-
     const preview = await runParseOnce({
-      config: {...config, dryRun: true},
+      config: mergeConfig(config, {dryRun: true}),
       file: args.file,
       engineName: flags.engine,
     })
@@ -100,12 +93,17 @@ export default class Parse extends BaseCommand {
     const debounced = createDebouncer(150, () => {
       void once()
     })
-    fs.watch(preview.value.inputPath, () => {
+    const watcher = fs.watch(preview.value.inputPath, () => {
       debounced.trigger()
     })
-    await new Promise<void>(() => {
-      /* keep the process alive until SIGINT */
+    await new Promise<void>((resolve) => {
+      const stop = (): void => {
+        debounced.cancel()
+        watcher.close()
+        resolve()
+      }
+      process.once('SIGINT', stop)
+      process.once('SIGTERM', stop)
     })
-    void target
   }
 }

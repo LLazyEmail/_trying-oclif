@@ -18,75 +18,65 @@ npm install -g @llazyemail/cli
 npx @llazyemail/cli --help
 ```
 
+Requires **Node.js 22+**.
+
 ## Quick start
 
 ```bash
-# Smoke test
-llazy hello
-llazy hello Alice --force
-
-# Validate project folders (replaces the old checkFolders.js)
-llazy check folders
-llazy check folders --root ./my-project --strict
-
-# Parse Markdown → email HTML (skeleton – engine integration coming)
+llazy init
 llazy parse
-llazy parse ./source/source.md --mode reactFull --format react
 llazy parse --dry-run --verbose
+llazy parse --format json
+llazy parse --watch
+llazy config
+llazy check folders
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `llazy hello [NAME]` | Say hello (example / smoke-test) |
+| `llazy init` | Scaffold `source/`, `generated/`, sample Markdown, and `.llazyrc.json` |
+| `llazy parse [FILE]` | Parse Markdown into email-ready HTML, React, or JSON |
+| `llazy config` | Print the resolved config (defaults + file + flags) |
 | `llazy check folders` | Validate required & recommended project folders |
-| `llazy parse [FILE]` | Parse Markdown into email-ready HTML or React trees |
+| `llazy hello [NAME]` | Smoke-test command |
 | `llazy help [COMMAND]` | Display help |
 
-### Shared flags (most commands)
+### Config file
 
-| Flag | Short | Default | Description |
-|------|-------|---------|-------------|
-| `--source` | `-s` | `./source` | Source directory |
-| `--output` | `-o` | `./generated` | Output directory |
-| `--mode` | `-m` | `full` | Parse mode (`full` \| `reactFull` \| `recipesFull` \| `hackernoonFront`) |
-| `--format` | `-f` | `html` | Output format (`html` \| `react` \| `json`) |
-| `--verbose` | `-v` | `false` | Verbose logging |
-| `--dry-run` | | `false` | Log actions without writing files |
+Optional. First match wins:
 
-Invalid `--mode` / `--format` values emit a warning and fall back to the defaults – the CLI never crashes on user input.
+- `.llazyrc.json`
+- `llazy.config.json`
 
-## Architecture highlights
-
-- **Strict TypeScript** – `noImplicitAny`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, etc.
-- **Immutable config** – `Readonly<CliConfig>` + `Object.freeze`; `createConfig()` always returns a new frozen object.
-- **Result monad** – pure domain functions return `Result<T>` instead of throwing for expected failures.
-- **BaseCommand** – shared flag set + validated config resolution for every domain command.
-- **Zero external runtime deps for core types** – only `@oclif/core` and Node built-ins.
-- **Native tests** – `node:test` + `node:assert/strict` (no Jest/Mocha required for the unit suite).
-
-### Class / type relationship (simplified)
-
+```json
+{
+  "sourceDir": "./source",
+  "outputDir": "./generated",
+  "parseMode": "full",
+  "format": "html",
+  "verbose": false,
+  "dryRun": false
+}
 ```
-┌─────────────────┐
-│   BaseCommand   │  (extends @oclif/core Command)
-│  resolveConfig()│
-└────────┬────────┘
-         │
-    ┌────┴────┬──────────────┐
-    │         │              │
- Hello   CheckFolders     Parse
-    │         │              │
-    └────┬────┴──────────────┘
-         │
-┌────────▼────────┐
-│   CliConfig     │  (Readonly + frozen)
-│  ParseMode      │
-│  OutputFormat   │
-│  Result<T>      │
-└─────────────────┘
-```
+
+Precedence: **defaults → config file → explicit CLI flags**.
+
+### Shared flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--source` | `-s` | Source directory |
+| `--output` | `-o` | Output directory |
+| `--mode` | `-m` | `full` \| `reactFull` \| `recipesFull` \| `hackernoonFront` |
+| `--format` | `-f` | `html` \| `react` \| `json` |
+| `--verbose` | `-v` | Verbose logging |
+| `--dry-run` | | Log actions without writing files |
+
+`parse` also accepts `--engine <name>` (default `stub`) and `--watch`.
+
+The current renderer is a **stub**. It writes a real file so the CLI is usable, but it does not run markdown-to-email yet. A future adapter registers itself with `registerEngine()` and can be selected with `--engine`.
 
 ## Development
 
@@ -97,23 +87,10 @@ npm install
 npm run build
 npm test
 
-# Live development (ts-node / tsx)
-npm run dev -- hello
-npm run dev -- check folders
+npm run dev -- init
 npm run dev -- parse --dry-run
+npm run dev -- config
 ```
-
-### Adding a new command
-
-1. Create `src/commands/<topic>/<name>.ts` (or `src/commands/<name>.ts`).
-2. Extend `BaseCommand` and reuse `sharedFlags` when configuration is needed.
-3. Export the class as `default`.
-4. Add tests under `test/`.
-5. Run `npm run build` – oclif discovers the command automatically.
-
-## Relationship to the wider LLazyEmail ecosystem
-
-This CLI is designed as a standalone open-source package while serving as the command-line surface for the larger content / email rendering engine (markdown-to-email, typography packages, layout generators, etc.). Future PRs will wire the real parsing & typography engines behind the `parse` command without changing the public CLI contract.
 
 ## License
 
