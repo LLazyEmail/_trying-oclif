@@ -17,6 +17,18 @@ import {
 import {loadProjectConfig} from '../utils/config-file.js'
 
 /**
+ * Sparse, mutable overrides collected from CLI flags.
+ */
+interface ConfigOverlay {
+  sourceDir?: string
+  outputDir?: string
+  parseMode?: ParseMode
+  format?: OutputFormat
+  verbose?: boolean
+  dryRun?: boolean
+}
+
+/**
  * Shared flags available to every command that needs configuration.
  * String flags have no hard default so a config file can supply values.
  */
@@ -67,7 +79,7 @@ export abstract class BaseCommand extends Command {
       this.warn(`Could not load project config: ${loaded.error}`)
     }
 
-    const overlay: Partial<CliConfig> = {}
+    const overlay: ConfigOverlay = {}
 
     if (typeof flags.source === 'string') {
       overlay.sourceDir = flags.source
@@ -78,7 +90,7 @@ export abstract class BaseCommand extends Command {
 
     if (typeof flags.mode === 'string') {
       if (isParseMode(flags.mode)) {
-        overlay.parseMode = flags.mode as ParseMode
+        overlay.parseMode = flags.mode
       } else {
         this.warn(`Invalid parse mode "${flags.mode}", keeping "${fromFile.parseMode}"`)
       }
@@ -86,7 +98,7 @@ export abstract class BaseCommand extends Command {
 
     if (typeof flags.format === 'string') {
       if (isOutputFormat(flags.format)) {
-        overlay.format = flags.format as OutputFormat
+        overlay.format = flags.format
       } else {
         this.warn(`Invalid format "${flags.format}", keeping "${fromFile.format}"`)
       }
