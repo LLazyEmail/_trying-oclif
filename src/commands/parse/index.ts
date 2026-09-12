@@ -1,13 +1,14 @@
 /**
  * Primary parse command – Markdown → email-ready HTML / React.
- * This is the main entry point that will later wire into the
- * typography & layout engines of the LLazyEmail ecosystem.
+ * Uses the stub renderer until a real engine adapter is registered.
  *
  * @packageDocumentation
  */
 
 import {Args} from '@oclif/core'
 import {BaseCommand, sharedFlags} from '../base.js'
+import {stubRenderer} from '../../engine/stub.js'
+import {readTextFile, writeTextFile} from '../../utils/fs.js'
 import {resolveCwd} from '../../utils/paths.js'
 
 /**
@@ -53,12 +54,23 @@ export default class Parse extends BaseCommand {
       ? resolveCwd(args.file)
       : resolveCwd(config.sourceDir, 'source.md')
 
-    const outputPath = resolveCwd(
-      config.outputDir,
-      config.format === 'react' ? 'newEmail.jsx' : 'newEmail.html',
-    )
+    const markdownResult = await readTextFile(inputPath)
+    if (!markdownResult.ok) {
+      this.error(
+        `${markdownResult.error}. Run \`llazy init\` to create a sample source file.`,
+      )
+    }
+
+    const rendered = stubRenderer.render({
+      markdown: markdownResult.value,
+      inputPath,
+      config,
+    })
+
+    const outputPath = resolveCwd(config.outputDir, `newEmail.${rendered.extension}`)
 
     if (config.verbose) {
+      this.log(`Engine: ${stubRenderer.name}`)
       this.log(`Config: ${JSON.stringify(config, null, 2)}`)
       this.log(`Input : ${inputPath}`)
       this.log(`Output: ${outputPath}`)
@@ -71,11 +83,11 @@ export default class Parse extends BaseCommand {
       return
     }
 
-    // Placeholder for the real rendering engine integration.
-    this.log(
-      `Parsing ${inputPath} with mode=${config.parseMode}, format=${config.format}…`,
-    )
-    this.log(`(Engine integration pending – skeleton only)`)
-    this.log(`Would write → ${outputPath}`)
+    const written = await writeTextFile(outputPath, rendered.body)
+    if (!written.ok) {
+      this.error(written.error)
+    }
+
+    this.log(`Wrote ${outputPath} with the ${stubRenderer.name} renderer.`)
   }
 }
