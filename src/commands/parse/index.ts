@@ -1,28 +1,18 @@
 /**
  * Primary parse command – Markdown → email-ready HTML / React.
- * Uses the stub renderer until a real engine adapter is registered.
+ * Uses the registered renderer (stub by default).
  *
  * @packageDocumentation
  */
 
-import {Args} from '@oclif/core'
+import fs from 'node:fs'
+import {Args, Flags} from '@oclif/core'
 import {BaseCommand, sharedFlags} from '../base.js'
-import {stubRenderer} from '../../engine/stub.js'
-import {readTextFile, writeTextFile} from '../../utils/fs.js'
-import {resolveCwd} from '../../utils/paths.js'
+import {runParseOnce} from '../../parse/run-parse.js'
+import {createDebouncer} from '../../utils/debounce.js'
 
 /**
  * `llazy parse [FILE]`
- *
- * Parses a Markdown source file (or the default source directory)
- * into the configured output format.
- *
- * @example
- * ```
- * $ llazy parse
- * $ llazy parse ./source/source.md --mode reactFull --format react
- * $ llazy parse --dry-run --verbose
- * ```
  */
 export default class Parse extends BaseCommand {
   static override description =
@@ -33,10 +23,20 @@ export default class Parse extends BaseCommand {
     '<%= config.bin %> <%= command.id %> ./source/source.md',
     '<%= config.bin %> <%= command.id %> --mode reactFull --format react',
     '<%= config.bin %> <%= command.id %> --dry-run --verbose',
+    '<%= config.bin %> <%= command.id %> --watch',
+    '<%= config.bin %> <%= command.id %> --engine stub',
   ]
 
   static override flags = {
     ...sharedFlags,
+    engine: Flags.string({
+      description: 'Renderer engine name (default: stub)',
+    }),
+    watch: Flags.boolean({
+      char: 'w',
+      description: 'Re-parse when the source file changes',
+      default: false,
+    }),
   }
 
   static override args = {
@@ -47,47 +47,65 @@ export default class Parse extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    const {args} = await this.parse(Parse)
+    const {args, flags} = await this.parse(Parse)
     const config = await this.resolveConfig()
 
-    const inputPath = args.file
-      ? resolveCwd(args.file)
-      : resolveCwd(config.sourceDir, 'source.md')
-
-    const markdownResult = await readTextFile(inputPath)
-    if (!markdownResult.ok) {
-      this.error(
-        `${markdownResult.error}. Run \`llazy init\` to create a sample source file.`,
-      )
+    const once = async (): Promise<void> => {
+      const result = await runParseOnce({
+        config,
+        file: args.file,
+        engineName: flags.engine,
+      })
+      if (!result.ok) {
+        this.error(result.error)
+      }
+      if (config.verbose) {
+        this.log(`Engine: ${result.value.engine}`)
+        this.log(`Input : ${result.value.inputPath}`)
+        this.log(`Output: ${result.value.outputPath}`)
+      }
+      if (result.value.wrote) {
+        this.log(`Wrote ${result.value.outputPath} with the ${result.value.engine} renderer.`)
+      } else {
+        this.log(
+          `[dry-run] Would parse ${result.value.inputPath} → ${result.value.outputPath}`,
+        )
+      }
     }
 
-    const rendered = stubRenderer.render({
-      markdown: markdownResult.value,
-      inputPath,
-      config,
-    })
+    await once()
 
-    const outputPath = resolveCwd(config.outputDir, `newEmail.${rendered.extension}`)
-
-    if (config.verbose) {
-      this.log(`Engine: ${stubRenderer.name}`)
-      this.log(`Config: ${JSON.stringify(config, null, 2)}`)
-      this.log(`Input : ${inputPath}`)
-      this.log(`Output: ${outputPath}`)
-    }
-
-    if (config.dryRun) {
-      this.log(
-        `[dry-run] Would parse ${inputPath} → ${outputPath} (mode=${config.parseMode}, format=${config.format})`,
-      )
+    if (!flags.watch) {
       return
     }
 
-    const written = await writeTextFile(outputPath, rendered.body)
-    if (!written.ok) {
-      this.error(written.error)
+    const target = (await runParseOnce({
+      config: {...config, dryRun: true},
+      file: args.file,
+      engineName: flags.engine,
+    })).ok
+      ? undefined
+      : undefined
+
+    const preview = await runParseOnce({
+      config: {...config, dryRun: true},
+      file: args.file,
+      engineName: flags.engine,
+    })
+    if (!preview.ok) {
+      this.error(preview.error)
     }
 
-    this.log(`Wrote ${outputPath} with the ${stubRenderer.name} renderer.`)
+    this.log(`Watching ${preview.value.inputPath} (Ctrl+C to stop)`)
+    const debounced = createDebouncer(150, () => {
+      void once()
+    })
+    fs.watch(preview.value.inputPath, () => {
+      debounced.trigger()
+    })
+    await new Promise<void>(() => {
+      /* keep the process alive until SIGINT */
+    })
+    void target
   }
 }
