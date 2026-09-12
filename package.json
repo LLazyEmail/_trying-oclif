@@ -15,14 +15,14 @@
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^5.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.5.0",
     "eslint": "^10.0.0",
     "oclif": "^5.0.0",
     "prettier": "^3.0.0",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=22.0.0"
