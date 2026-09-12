@@ -52,4 +52,23 @@ describe('init + parse commands', () => {
       }
     },
   )
+
+  it('CLI --format overrides .llazyrc.json',
+    async () => {
+      await fs.writeFile(
+        path.join(tmp, '.llazyrc.json'),
+        JSON.stringify({format: 'html', parseMode: 'full'}, null, 2),
+        'utf8',
+      )
+      await Parse.run(['--format', 'json'])
+      const outputPath = path.join(tmp, 'generated', 'newEmail.json')
+      assert.equal(await pathExists(outputPath), true)
+      const body = await readTextFile(outputPath)
+      assert.equal(body.ok, true)
+      if (body.ok) {
+        const parsed = JSON.parse(body.value) as {engine: string}
+        assert.equal(parsed.engine, 'stub')
+      }
+    },
+  )
 })

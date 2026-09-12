@@ -3,22 +3,16 @@ import assert from 'node:assert/strict'
 import Hello from '../../src/commands/hello.js'
 
 describe('hello command', () => {
-  it('greets the world by default',
+  it('runs with the default name',
     async () => {
-      const logs: string[] = []
-      const command = new Hello(['hello'], {} as never)
-      command.log = (message = '') => {
-        logs.push(String(message))
-      }
       await Hello.run([])
-      // Command.run writes to stdout; the important part is that it resolves.
       assert.ok(true)
     },
   )
 
-  it('accepts a name argument',
+  it('runs with a custom name and --force',
     async () => {
-      await Hello.run(['Ada'])
+      await Hello.run(['Ada', '--force'])
       assert.ok(true)
     },
   )
