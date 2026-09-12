@@ -24,8 +24,8 @@ export interface ParsePass {
 
 export interface RunParseOptions {
   readonly config: Readonly<CliConfig>
-  readonly file?: string
-  readonly engineName?: string
+  readonly file?: string | undefined
+  readonly engineName?: string | undefined
 }
 
 /**
