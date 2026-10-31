@@ -28,6 +28,17 @@ Register with `registerEngine`. Look up with `getEngine(name)`, which returns `R
 
 `src/engine/stub.ts` registers `stub` on import. It writes a document that includes the input path and a slice of the Markdown so the CLI produces a real file. That is the whole point of the stub: `parse` is not a no-op.
 
+## Adapter boundary
+
+`src/engine/adapters/types.ts` is the contract a future adapter implements. It imports nothing from sibling packages.
+
+Reserved names (do not register a stub under these): `markdown`, `generate-template`.
+
+| Adapter | Will call | CLI still owns |
+| --- | --- | --- |
+| markdown-to-email | the parse that is `dev:parseFull` today | reading the file, writing the output |
+| generate-template | `createGenerator` + `run` / `writeAll` | the catalog file format, the write |
+
 ## Adding one later
 
 ```ts
