@@ -11,6 +11,7 @@ import type {CatalogEntry} from '../../catalog/types.js'
 import {loadMergedCatalog, resolveTemplate} from '../../catalog/lookup.js'
 import {loadPayloadFile} from '../../catalog/payload.js'
 import {renderCatalogEntry} from '../../catalog/render-entry.js'
+import {renderIndexPage, type IndexEntry} from '../../catalog/index-page.js'
 import {writeTextFile} from '../../utils/fs.js'
 import {resolveCwd} from '../../utils/paths.js'
 
@@ -70,9 +71,22 @@ export default class Generate extends Command {
       return
     }
 
+    const written: IndexEntry[] = []
     for (const entry of catalog) {
       await this.writeOne(flags.out, entry)
+      written.push({
+        fileName: entry.fileName,
+        label: entry.ids[0] ?? entry.fileName,
+        kind: entry.kind,
+      })
     }
+
+    const indexPath = resolveCwd(flags.out, 'index.html')
+    const index = await writeTextFile(indexPath, renderIndexPage(written))
+    if (!index.ok) {
+      this.error(index.error)
+    }
+    this.log(`Wrote ${indexPath}`)
   }
 
   private async writeOne(
