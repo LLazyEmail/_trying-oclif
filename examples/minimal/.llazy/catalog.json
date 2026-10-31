@@ -1,0 +1,12 @@
+{
+  "templates": [
+    {
+      "ids": ["ReceiptEmail"],
+      "aliases": ["receipt"],
+      "kind": "transactional",
+      "description": "Example receipt",
+      "fileName": "receipt.html",
+      "samplePayload": { "name": "Alex", "amount": "$10.00" }
+    }
+  ]
+}
