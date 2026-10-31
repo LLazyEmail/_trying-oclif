@@ -31,11 +31,12 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: Install dependencies
         # ignore-scripts avoids prepare→tsc during install;
         # build runs explicitly in the next step.
-        run: npm install --ignore-scripts
+        run: npm ci --ignore-scripts
 
       - name: Build
         run: npm run build
