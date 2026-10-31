@@ -6,6 +6,7 @@
  */
 
 import {Command, Flags} from '@oclif/core'
+import type {CatalogEntry} from '../../catalog/types.js'
 import {listCatalog, resolveTemplate} from '../../catalog/lookup.js'
 import {renderCatalogEntry} from '../../catalog/render-entry.js'
 import {writeTextFile} from '../../utils/fs.js'
@@ -52,10 +53,7 @@ export default class Generate extends Command {
     }
   }
 
-  private async writeOne(
-    out: string,
-    entry: {fileName: string; ids: readonly string[]; samplePayload: Readonly<Record<string, unknown>>; kind: 'transactional' | 'newsletter' | 'lead'; description: string; aliases?: readonly string[]},
-  ): Promise<void> {
+  private async writeOne(out: string, entry: CatalogEntry): Promise<void> {
     const html = renderCatalogEntry(entry)
     const outputPath = resolveCwd(out, entry.fileName)
     const written = await writeTextFile(outputPath, html)
