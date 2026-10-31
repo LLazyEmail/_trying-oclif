@@ -61,6 +61,12 @@
       "check": {
         "description": "Validate project structure and folders"
       },
+      "templates": {
+        "description": "List and render catalog templates"
+      },
+      "generate": {
+        "description": "Generate one or all catalog templates"
+      },
       "lint": {
         "description": "Lint source files"
       },
