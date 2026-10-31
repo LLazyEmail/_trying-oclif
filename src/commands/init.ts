@@ -12,6 +12,8 @@ import {ensureDir, pathExists, writeTextFile} from '../utils/fs.js'
 const SAMPLE_MARKDOWN = [
   '#! Sample newsletter',
   '',
+  '#~ A short preview line',
+  '',
   '# Hello from LLazyEmail',
   '',
   'This is a starter Markdown file created by `llazy init`.',
@@ -37,13 +39,31 @@ const SAMPLE_CONFIG = `${JSON.stringify(
   2,
 )}\n`
 
+const SAMPLE_CATALOG = `${JSON.stringify(
+  {
+    templates: [
+      {
+        ids: ['ReceiptEmail'],
+        aliases: ['receipt'],
+        kind: 'transactional',
+        description: 'Example project template. Overrides nothing built-in.',
+        fileName: 'receipt.html',
+        samplePayload: {name: 'Alex', amount: '$10.00'},
+      },
+    ],
+  },
+  null,
+  2,
+)}\n`
+
 /**
  * `llazy init`
  *
- * Creates `source/`, `generated/`, a sample Markdown file, and `.llazyrc.json`.
+ * Creates `source/`, `generated/`, a sample Markdown file, `.llazyrc.json`,
+ * and `.llazy/catalog.json`.
  */
 export default class Init extends BaseCommand {
-  static override description = 'Scaffold source/, generated/, sample Markdown, and .llazyrc.json'
+  static override description = 'Scaffold source/, generated/, sample Markdown, config, and catalog'
 
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
@@ -62,8 +82,10 @@ export default class Init extends BaseCommand {
     const root = process.cwd()
     const sourceDir = path.join(root, 'source')
     const outputDir = path.join(root, 'generated')
+    const catalogDir = path.join(root, '.llazy')
     const markdownPath = path.join(sourceDir, 'source.md')
     const configPath = path.join(root, '.llazyrc.json')
+    const catalogPath = path.join(catalogDir, 'catalog.json')
 
     const sourceDirResult = await ensureDir(sourceDir)
     if (!sourceDirResult.ok) this.error(sourceDirResult.error)
@@ -71,15 +93,20 @@ export default class Init extends BaseCommand {
     const outputDirResult = await ensureDir(outputDir)
     if (!outputDirResult.ok) this.error(outputDirResult.error)
 
+    const catalogDirResult = await ensureDir(catalogDir)
+    if (!catalogDirResult.ok) this.error(catalogDirResult.error)
+
     await this.writeUnlessExists(markdownPath, SAMPLE_MARKDOWN, flags.force)
     await this.writeUnlessExists(configPath, SAMPLE_CONFIG, flags.force)
+    await this.writeUnlessExists(catalogPath, SAMPLE_CATALOG, flags.force)
 
     this.log('Project scaffolded.')
     this.log(`  ${sourceDir}`)
     this.log(`  ${outputDir}`)
     this.log(`  ${markdownPath}`)
     this.log(`  ${configPath}`)
-    this.log('Next: llazy parse')
+    this.log(`  ${catalogPath}`)
+    this.log('Next: llazy parse   or   llazy templates list')
   }
 
   private async writeUnlessExists(
