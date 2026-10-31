@@ -9,12 +9,23 @@
 import type {CliConfig} from '../types/config.js'
 
 /**
+ * Subject and preview pulled from Markdown (`#!` / `#~`).
+ * Optional under exactOptionalPropertyTypes, so callers may omit them.
+ */
+export interface EmailMetaFields {
+  readonly subject?: string | undefined
+  readonly preview?: string | undefined
+  readonly title?: string | undefined
+}
+
+/**
  * Input passed to a renderer.
  */
 export interface RenderRequest {
   readonly markdown: string
   readonly inputPath: string
   readonly config: Readonly<CliConfig>
+  readonly meta?: EmailMetaFields | undefined
 }
 
 /**

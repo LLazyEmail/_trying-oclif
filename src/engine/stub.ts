@@ -15,24 +15,29 @@ function escapeHtml(value: string): string {
     .replaceAll('>', '&gt;')
 }
 
-function toHtml(markdown: string, inputPath: string): string {
+function toHtml(request: RenderRequest): string {
+  const title = request.meta?.subject ?? 'LLazyEmail stub output'
+  const preview = request.meta?.preview
   return [
     '<!DOCTYPE html>',
     '<html lang="en">',
     '<head>',
     '  <meta charset="utf-8">',
-    '  <title>LLazyEmail stub output</title>',
+    `  <title>${escapeHtml(title)}</title>`,
     '</head>',
     '<body>',
+    preview === undefined
+      ? ''
+      : `  <span style="display:none">${escapeHtml(preview)}</span>`,
     '  <p><!-- stub renderer — replace with markdown-to-email later --></p>',
-    `  <p>Source: ${escapeHtml(inputPath)}</p>`,
+    `  <p>Source: ${escapeHtml(request.inputPath)}</p>`,
     '  <pre>',
-    escapeHtml(markdown),
+    escapeHtml(request.markdown),
     '  </pre>',
     '</body>',
     '</html>',
     '',
-  ].join('\n')
+  ].filter((line) => line !== '').join('\n')
 }
 
 function toReact(markdown: string, inputPath: string): string {
@@ -51,12 +56,14 @@ function toReact(markdown: string, inputPath: string): string {
   ].join('\n')
 }
 
-function toJson(markdown: string, inputPath: string): string {
+function toJson(request: RenderRequest): string {
   return `${JSON.stringify(
     {
       engine: 'stub',
-      inputPath,
-      markdown,
+      inputPath: request.inputPath,
+      subject: request.meta?.subject,
+      preview: request.meta?.preview,
+      markdown: request.markdown,
     },
     null,
     2,
@@ -73,9 +80,9 @@ export const stubRenderer: RendererEngine = {
       case 'react':
         return {body: toReact(request.markdown, request.inputPath), extension: 'jsx'}
       case 'json':
-        return {body: toJson(request.markdown, request.inputPath), extension: 'json'}
+        return {body: toJson(request), extension: 'json'}
       default:
-        return {body: toHtml(request.markdown, request.inputPath), extension: 'html'}
+        return {body: toHtml(request), extension: 'html'}
     }
   },
 }

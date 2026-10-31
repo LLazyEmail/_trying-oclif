@@ -11,6 +11,7 @@ import {err, ok, type Result} from '../types/result.js'
 import {getEngine} from '../engine/registry.js'
 import {readTextFile, writeTextFile} from '../utils/fs.js'
 import {resolveCwd} from '../utils/paths.js'
+import {extractEmailMeta} from '../utils/email-meta.js'
 
 /**
  * Result of one parse pass.
@@ -20,6 +21,7 @@ export interface ParsePass {
   readonly inputPath: string
   readonly outputPath: string
   readonly wrote: boolean
+  readonly subject?: string | undefined
 }
 
 export interface RunParseOptions {
@@ -48,10 +50,13 @@ export async function runParseOnce(options: RunParseOptions): Promise<Result<Par
     return err(`${markdown.error}. Run \`llazy init\` to create a sample source file.`)
   }
 
+  const meta = extractEmailMeta(markdown.value)
+
   const rendered = engineResult.value.render({
     markdown: markdown.value,
     inputPath,
     config: options.config,
+    meta,
   })
 
   const outputPath = resolveCwd(options.config.outputDir, `newEmail.${rendered.extension}`)
@@ -62,6 +67,7 @@ export async function runParseOnce(options: RunParseOptions): Promise<Result<Par
       inputPath,
       outputPath,
       wrote: false,
+      subject: meta.subject,
     })
   }
 
@@ -75,5 +81,6 @@ export async function runParseOnce(options: RunParseOptions): Promise<Result<Par
     inputPath,
     outputPath,
     wrote: true,
+    subject: meta.subject,
   })
 }
